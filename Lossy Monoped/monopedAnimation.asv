@@ -10,12 +10,14 @@ classdef monopedAnimation
         patches %Container of patch objects plotted in fig
         bodyPoints
         slider %UIelement time index slider handle
-        visSpring %Visual spring length when undeflected (double)
+        
+        visSpring %Visual spring length when undeflected
+        
+        
     end
     
     methods
         function animObj = monopedAnimation(o)
-        %MONOPEDANIMATION constructor using SLIPdynamics Object
             animObj.obj = o;
             animObj.fig = figure(74);
             cla
@@ -48,10 +50,7 @@ classdef monopedAnimation
             animObj.slider = uicontrol('Style','slider','Min',1,'Max',length(animObj.obj.t),'SliderStep',[1/length(animObj.obj.t),5/length(animObj.obj.t)],...
                 'Value',1,'Units','normalized','Position',[0.1250 0.0167 0.7804 0.0476],...
                 'Callback',@(source,event) updateSlider(animObj,source,event));
-            
-            %here is where the initial state is actually written to the
-            %visuals
-            updateVisuals(animObj,animObj.obj.q(1,:),animObj.obj.t(1),animObj.obj.dynamic_state_arr(1));
+            updateVisuals(animObj,animObj.obj.q(index,:),animObj.obj.t(index),animObj.obj.dynamic_state_arr(index));
         end
         
         function runAnimation(animObj)
@@ -61,8 +60,6 @@ classdef monopedAnimation
         end
         
         function updateSlider(animObj,source,event)
-            %UPDATESLIDER Callback function, updates visuals to match new
-            %slider index            
             index = round(source.Value); %Read the closest whole step of the slider
             %Write the selected index's state to the model
             updateVisuals(animObj,animObj.obj.q(index,:),animObj.obj.t(index),animObj.obj.dynamic_state_arr(index));
