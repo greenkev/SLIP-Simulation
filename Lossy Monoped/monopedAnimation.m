@@ -64,36 +64,7 @@ classdef monopedAnimation
         function runAnimation(animObj)
             
             for i = 1:length(animObj.obj.t)
-                animObj.patches.body_patch.Vertices = ([cos(animObj.obj.q(i,3)), -sin(animObj.obj.q(i,3)), animObj.obj.q(i,1);...
-                                       sin(animObj.obj.q(i,3)),  cos(animObj.obj.q(i,3)), animObj.obj.q(i,2);]...
-                                       *(animObj.bodyPoints'))';
-                                   
-                                   
-                animObj.patches.thigh_patch.Vertices = ...
-                ([cos(animObj.obj.q(i,4)), -sin(animObj.obj.q(i,4)), animObj.obj.q(i,1);... %Rotation Matrix
-                  sin(animObj.obj.q(i,4)),  cos(animObj.obj.q(i,4)), animObj.obj.q(i,2);]...
-               *( [0.03*[1,1,-1,-1,1*cos(0:0.1:pi)];... %Points
-                   0   ,-animObj.obj.q(i,5)+animObj.visSpring,-animObj.obj.q(i,5)+animObj.visSpring,0,0.03*sin(0:0.1:pi);...
-                   ones(1,36);]))';
-               
-               hold on
-               springPts = ([cos(animObj.obj.q(i,4)), -sin(animObj.obj.q(i,4)), animObj.obj.q(i,1);... %Rotation Matrix hip joint
-                  sin(animObj.obj.q(i,4)),  cos(animObj.obj.q(i,4)), animObj.obj.q(i,2);]...
-                  *[0.05*[0,0, -1, 1, -1, 1, -1, 0,0];...
-                   -(1/6)*(animObj.obj.q(i,6)-animObj.obj.q(i,5)+animObj.visSpring)*[0,0.5,1,2,3,4,5,5.5,6]-animObj.obj.q(i,5)+animObj.visSpring;...
-                   ones(1,9);]);     
-               
-               animObj.patches.spring.XData = springPts(1,:);
-               animObj.patches.spring.YData = springPts(2,:);
-               
-                animObj.patches.timeText.Position = [min(xlim) + 0.05*(max(xlim)-min(xlim)),min(ylim) + 0.95*(max(ylim)-min(ylim))];
-                animObj.patches.timeText.String = ['t = ',num2str(animObj.obj.t(i)),'   Dynamic State ',num2str(animObj.obj.dynamic_state_arr(i))];
-            
                 
-                xlim([-1,1]+round(animObj.obj.q(i,1)*2)/2);
-
-                %Increment the screen by 0.5 m increments
-                drawnow;
             end
         end
         
@@ -119,6 +90,40 @@ classdef monopedAnimation
         function updateSlider(animObj,source,event)
 %             keyboard
             dispAtIndex(animObj,round(source.Value))
+        end
+        
+        function updateVisuals(animObj,q)
+            animObj.patches.body_patch.Vertices = ...
+            ([cos(q(3)), -sin(q(3)), q(1);... %Body Rotation Matrix
+              sin(q(3)),  cos(q(3)), q(2);]...
+            *(animObj.bodyPoints'))';
+                                   
+                                   
+            animObj.patches.thigh_patch.Vertices = ...
+                ([cos(q(4)), -sin(q(4)), q(1);... %Leg Rotation Matrix
+                  sin(q(4)),  cos(q(4)), q(2);]...
+               *( [0.03*[1,1,-1,-1,1*cos(0:0.1:pi)];... %Leg Points X
+                   0   ,-q(5)+animObj.visSpring,-q(5)+animObj.visSpring,0,0.03*sin(0:0.1:pi);... %Leg Points Y
+                   ones(1,36);]))';
+               
+            hold on
+            springPts = ([cos(animObj.obj.q(i,4)), -sin(animObj.obj.q(i,4)), animObj.obj.q(i,1);... %Rotation Matrix hip joint
+                  sin(animObj.obj.q(i,4)),  cos(animObj.obj.q(i,4)), animObj.obj.q(i,2);]...
+                  *[0.05*[0,0, -1, 1, -1, 1, -1, 0,0];...
+                   -(1/6)*(animObj.obj.q(i,6)-animObj.obj.q(i,5)+animObj.visSpring)*[0,0.5,1,2,3,4,5,5.5,6]-animObj.obj.q(i,5)+animObj.visSpring;...
+                   ones(1,9);]);     
+
+            animObj.patches.spring.XData = springPts(1,:);
+            animObj.patches.spring.YData = springPts(2,:);
+
+            animObj.patches.timeText.Position = [min(xlim) + 0.05*(max(xlim)-min(xlim)),min(ylim) + 0.95*(max(ylim)-min(ylim))];
+            animObj.patches.timeText.String = ['t = ',num2str(animObj.obj.t(i)),'   Dynamic State ',num2str(animObj.obj.dynamic_state_arr(i))];
+            
+                
+                xlim([-1,1]+round(animObj.obj.q(i,1)*2)/2);
+
+                %Increment the screen by 0.5 m increments
+                drawnow;
         end
         
     end
