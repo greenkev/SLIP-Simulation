@@ -11,14 +11,14 @@ classdef SLIPdynamics
         m_body = 10;
         I_body = 0.1;  % Confirmed Realistic
         %Hip Joint
-        b_hip = 0;
+        b_hip = 1;
         %Thigh
-        m_thigh = 0;
+        m_thigh = 0.2;
         r_thigh = 0.2;
         I_thigh = 0.01; % Confirmed Realistic
         %Leg Length Rotor
-        b_rot = 0;
-        m_rot = 3;  %Effective reflective interia on linear leg length
+        b_rot = 1;
+        m_rot = 4;  %Effective reflective interia on linear leg length
         %Leg Spring
         k_leg = 1000;
         b_leg = 10;
@@ -108,9 +108,9 @@ end %function switchMode
 function [value,isterminal,direction] = flightTransitions(t,y,o)
 %ODE Event function sensing foot touchdown during flight when moving
 %downward
-value = y(2) - y(6)*cos(y(4)) + max(0,y(8));
+value = y(2) - y(6)*cos(y(4));
 isterminal = 1;
-direction = [];
+direction = -1;
 end %function flightTransitions
 
 function [value,isterminal,direction] = stanceTransitions(t,y,o)
@@ -119,9 +119,9 @@ function [value,isterminal,direction] = stanceTransitions(t,y,o)
 
 %This is when the force on the ground is zero, which is not equivalent to
 %when the leg spring is unstretched
-value = o.k_leg*(sqrt(y(1)^2 + y(2)^2) - y(4)) - o.b_leg*(sqrt(y(5)^2 + y(6)^2) - y(8)) + min(y(4),0);
+value = o.k_leg*(sqrt(y(1)^2 + y(2)^2) - y(4)) - o.b_leg*(sqrt(y(5)^2 + y(6)^2) - y(8));
 isterminal = 1;
-direction = [];
+direction =  1;
 end %function stanceTransitions
 
 function dy = flightODEDynamics(t,y,sys,o,controller)

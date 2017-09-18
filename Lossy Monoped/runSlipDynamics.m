@@ -1,7 +1,7 @@
 % close all
 clear raibertController
 obj = SLIPdynamics();
-obj.dataTimeStep = 0.01;  %Output timestep (sec)
+obj.dataTimeStep = 0.005;  %Output timestep (sec)
 des_vel = 0.2; %m/s
 
 obj = simulate(obj,@raibertController,[0,10],des_vel);

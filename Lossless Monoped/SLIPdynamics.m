@@ -115,7 +115,7 @@ function [value,isterminal,direction] = stanceTransitions(t,y,o)
 
 %On a pure elastic leg zero force on the foot is identical to when the 
 %leg length reaches the unstretched length
-value = norm([y(1),y(3)]) - o.L0 + min(y(4),0);
+value = sqrt(y(1)^2 + y(3)^2) - o.L0 + min(y(4),0);
 isterminal = 1;
 direction = [];
 end %function stanceTransitions

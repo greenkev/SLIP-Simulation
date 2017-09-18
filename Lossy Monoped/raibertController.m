@@ -5,17 +5,17 @@ function [ u ] = raibertController(obj,q,qdot)
 
 loadingCompression = 0.05; %Amount of compression for Loading and Unloading phases (m)
 liftOffClearance = 0.05; %Distance toe must rise before the leg can be swung forward during flight (m)
-k_legAngle = 0.05; %m/(m/s) foot distance 
+k_legAngle = 0.1; %m/(m/s) foot distance 
 L_flight = 0.7; %unstretched leg length during compression and flight (m)
 L_extension = 0.75; %unstretched leg length during thrust (m)
 des_vel = 0.2; %m/s
 phi_des = 0; %Rads
 
 %Low Level controller gains, UNTUNED
-kp_swing = 10;
-kv_swing = 1;
-kp_hip = 50;
-kv_hip = 5;
+kp_swing = 90;
+kv_swing = 7;
+kp_hip = 100;
+kv_hip = 10;
 kp_L0 = 5000;
 kv_L0 = 300;
 
