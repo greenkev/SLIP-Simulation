@@ -22,8 +22,12 @@ classdef liftOffSimulation
     
     methods
         
-        function obj = SLIPdynamics() 
+        function obj = liftOffSimulation(inputObj) 
             %Potentially used in the future for Graphics init?
+            obj.g = inputObj.g;
+            obj.K = inputObj.k_leg;
+            obj.M =  inputObj.m_body + inputObj.m_thigh;
+            obj.L0 = 0.7;
         end
         
         function [r2] = simulate(o,alphaTD)

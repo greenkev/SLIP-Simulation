@@ -37,7 +37,7 @@ classdef SLIPdynamics
         dynamic_state_arr = 0;
         %World Frame state data
         q = [0,1,0,0,0.7,0.7]; %Some basic initial state data
-        qdot = zeros(1,6);
+        qdot = [1,zeros(1,5)];
     end %properties
     
     methods
