@@ -31,6 +31,11 @@ classdef SLIPdynamics
         %State: 0=flight, 1=Stance
         dynamic_state = 0;
         
+        %Controller Update time step
+        T_ctrl = 1/1000 %Run at 1 KHz
+        %physics timestep
+        T_physics = 1/10000 % 10 KHz
+        
         %Time
         t = [];
         %Recorded State
@@ -184,5 +189,10 @@ function o = fillSimData(o,t,y_in)
             o.qdot =    [o.qdot;    ydot(:,1:3),alphadot,ydot(:,4),Ldot]; 
     end %switch
 end %Function fillSimData
+
+function [t_out,y_out,u_out] = rk4(dyn,tspan,y0,options)
+
+
+end
 
 

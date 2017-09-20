@@ -27,7 +27,7 @@ classdef liftOffSimulation
             obj.g = inputObj.g;
             obj.K = inputObj.k_leg;
             obj.M =  inputObj.m_body + inputObj.m_thigh;
-            obj.L0 = 0.7;
+            obj.L0 = 0.75;
         end
         
         function [r2] = simulate(o,alphaTD)
