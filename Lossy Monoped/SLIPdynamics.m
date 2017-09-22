@@ -150,9 +150,6 @@ function dy = stanceODEDynamics(t,y,sys,o,controller)
     
     dy(1:4,1) = qdot;
     %The Second Order dynamics M*q_ddot + h = Bu + f_damping
-    if t>4.3
-%         keyboard
-    end
     dy(5:8,1) = massMatrixStance(sys,q)\(dampingForces(sys,q,qdot) + controlForces(sys,q,controller(o,q,qdot)) - dynamicsStance(sys,q,qdot));
 end
 
@@ -190,9 +187,5 @@ function o = fillSimData(o,t,y_in)
     end %switch
 end %Function fillSimData
 
-function [t_out,y_out,u_out] = rk4(dyn,tspan,y0,options)
-
-
-end
 
 
