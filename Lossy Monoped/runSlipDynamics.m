@@ -1,8 +1,11 @@
 robot = prismaticMonopod();
-tspan = [0,3];
+tspan = [0,10];
 tr = Terrain;
-tr = tr.flatGround();
-
+% tr = tr.flatGround();
+% tr = tr.uniformIncline(5*(pi/180));
+tr = tr.randomBumpy(0.1,0.2);
+tr.interpolationMethod = 'pchip';
+clear raibertController;
 robot = RK4Integrate(robot,tspan,@raibertController,tr);
 
 %%
@@ -24,14 +27,6 @@ for i = 1:size(lookupTable.dX,1)
 end
 
 save('lookupTable.mat','lookupTable');
-%%
-obj = SLIPdynamics();
-obj.dataTimeStep = 0.005;  %Output timestep (sec)
-des_vel = 1; %m/s
-load('lookupTable.mat');
-clear raibertController
-ctrl = @(obj,q,qdot) EGBcontroller(obj,q,qdot,lookupTable);
-obj = simulate(obj,ctrl,[0,10],des_vel);
 %%
 figure(9)
 subplot(3,1,1)
@@ -60,7 +55,7 @@ legend('Leg Angle','0.1*state');
 ylabel('Leg angle ');
 xlabel('time (sec)');
 %%
-aObj = monopedAnimation(robot);
+aObj = monopedAnimation(robot,tr);
 for i = 1:length(robot.t)
 %    aObj.dispAtIndex(i);
 %    keyboard

@@ -11,12 +11,14 @@ classdef monopedAnimation
         bodyPoints
         slider %UIelement time index slider handle
         visSpring %Visual spring length when undeflected (double)
+        tr %terrain Object
     end
     
     methods
-        function animObj = monopedAnimation(o)
-        %MONOPEDANIMATION constructor using SLIPdynamics Object
+        function animObj = monopedAnimation(o,terrain)
+        %MONOPEDANIMATION constructor using SLIPdynamics Object and terrain
             animObj.obj = o;
+            animObj.tr = terrain;
             animObj.fig = figure(74);
             cla
             grid on;
@@ -30,7 +32,8 @@ classdef monopedAnimation
                                    0.2, -0.1, 1;...
                                   -0.2, -0.1, 1;];
                       
-            animObj.patches.ground = patch([-500,-500,500,500],[0,-10,-10,0],[0.8,0.8,0.8]);
+            [xGround,yGround] = terrain.getVisualPoints(min(animObj.obj.q(:,1))-2,max(animObj.obj.q(:,1))+2);
+            animObj.patches.ground = patch([xGround,max(xGround),min(xGround)],[yGround,min(yGround)-10,min(yGround)-10],[0.8,0.8,0.8]);
             
             %Create a body patch object with the correct size and color
             animObj.patches.body_patch = patch(zeros(4,1),zeros(4,1),[70,216,226]./255);
@@ -99,7 +102,7 @@ classdef monopedAnimation
                             
             %Increment the screen by 0.5 m increments
             xlim([-1,1]+round(q(1)*2)/2);
-            ylim([-0.1,1.4]);
+            ylim([-0.1,1.4] + animObj.tr.groundHeight(q(1)));
             %Place the text at the top left corner of the screen
             animObj.patches.timeText.Position = [min(xlim) + 0.05*(max(xlim)-min(xlim)),min(ylim) + 0.95*(max(ylim)-min(ylim))];
             %Update visuals

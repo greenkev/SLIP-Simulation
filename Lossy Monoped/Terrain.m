@@ -6,9 +6,9 @@ classdef Terrain
     
     properties
         groundPoints
-        interpolationMethod = 'linear';
+        interpolationMethod = 'pchirp';
         extrapolationMethod = 0;
-        visualStep = 0.1; %X distance between points in visual data
+        visualStep = 0.01; %X distance between points in visual data
     end
     
     methods
@@ -53,9 +53,18 @@ classdef Terrain
         %UNIFORMINCLINE Sets the terrain to be a fixed angle with the zero
         %height at zero x. Positive is uphill to the right
             tr.groundPoints = [ 0, 0;...
-                                1, sin(angle);];
+                                cos(angle), sin(angle);];
                             
             tr.extrapolationMethod = 'extrap';            
+        end
+        
+        function tr = randomBumpy(tr,spacing,magnitude)
+        %RANDOMBUMPY This generates a rough profile with specified x
+        %spacing and a specified maximum deviation
+            x = (-30:spacing:30)';
+            tr.groundPoints = [x,magnitude*rand(size(x))];
+                            
+            tr.extrapolationMethod = 0;
         end
         
         

@@ -63,7 +63,8 @@ switch dynamicState
         %Check if the new foot position is below the ground
         if footTouchdownDist(robot,X,terrain) < 0
             stanceFootPos(1) = X(1) + X(6)*sin( X(4) );
-            stanceFootPos(2) = X(2) - X(6)*cos( X(4) );
+%             stanceFootPos(2) = X(2) - X(6)*cos( X(4) );
+            stanceFootPos(2) = terrain.groundHeight(stanceFootPos(1));
             dynamicState = 1;
             Xout = [X(1)-stanceFootPos(1), X(2)-stanceFootPos(2), X(3), X(5), X(7),X(8),X(9),X(11)];
         end        

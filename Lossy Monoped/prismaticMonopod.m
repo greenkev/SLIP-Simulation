@@ -60,6 +60,7 @@ classdef prismaticMonopod
                     
             end
         end
+        
         function robot = fillSimData(robot,t,y_in,u,dynamicState)
         %fillSimData This function copies the state data (y) into the object
         %members. What the state variables represent is different depending on the
@@ -89,9 +90,10 @@ classdef prismaticMonopod
                     %Foot Location needed to move from a coordinate system relative
                     %to the foot to a global coordinate system
                     xFootLocation = robot.q(end,1) + robot.q(end,6)*sin(robot.q(end,4));
+                    yFootLocation = robot.q(end,2) - robot.q(end,6)*cos(robot.q(end,4));
 
                     robot.t =       [robot.t;       t];            
-                    robot.q =       [robot.q;       (y(:,1) + xFootLocation),y(:,2:3),alpha,y(:,4),L]; 
+                    robot.q =       [robot.q;       (y(:,1) + xFootLocation),y(:,2) + yFootLocation, y(:,3),alpha,y(:,4),L]; 
                     robot.qdot =    [robot.qdot;    ydot(:,1:3),alphadot,ydot(:,4),Ldot]; 
             end %switch
         end %Function fillSimData
