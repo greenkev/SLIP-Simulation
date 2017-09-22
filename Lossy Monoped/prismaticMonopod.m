@@ -9,7 +9,7 @@ classdef prismaticMonopod
     
     properties
         %MODEL PARAMETERS
-        g = 9.81
+        grav = 9.81
         %Main Body
         m_body = 10;
         I_body = 0.1;  % Confirmed Realistic
@@ -30,12 +30,12 @@ classdef prismaticMonopod
         
         %MODEL STATE INFO
         %Time
-        t = [];
+        t = 0;
         %Recorded State
         dynamic_state_arr = 0;
         %World Frame state data
         q = [0,1,0,0,0.7,0.7]; %Some basic initial state data
-        qdot = [zeros(1,6)];
+        qdot = zeros(1,6);
         %Torque Actuation Data
         u = [0,0];
         
@@ -47,15 +47,29 @@ classdef prismaticMonopod
     end
     
     methods
-        
-        function robot = fillSimData(robot,t,y_in)
+        function f = footForce(robot,q,qdot)
+        %FOOTFORCE This function returns the sum of non-contact forces on the foot in the
+        %direction of the leg. It is used to determine liftoff conditions.
+        %Towards the body from the foot is positive
+            if length(q) == 6 
+                f = 0; %In flight
+            else
+                f =   robot.k_leg*(sqrt(q(1)^2 + q(2)^2) - q(4))... %Spring Force
+                    + robot.b_leg*(sqrt(qdot(1)^2 + qdot(2)^2) - qdot(4))... %Leg Damping
+                    - robot.m_toe*robot.grav* q(2)/sqrt(q(1)^2 + q(2)^2); %Gravitational Force
+                    
+            end
+        end
+        function robot = fillSimData(robot,t,y_in,u,dynamicState)
         %fillSimData This function copies the state data (y) into the object
         %members. What the state variables represent is different depending on the
         %dynamic state (stance, flight).
 
 
-            robot.dynamic_state_arr = [robot.dynamic_state_arr;robot.dynamic_state*ones(size(t))];
-            switch robot.dynamic_state
+            robot.dynamic_state_arr = [robot.dynamic_state_arr;dynamicState*ones(size(t))];            
+            o.u = [robot.u;u'];
+            
+            switch dynamicState
                 case 0 %Flight phase
                     robot.t =       [robot.t;      t];
                     robot.q =       [robot.q;      y_in(:,1:6)]; 

@@ -1,4 +1,4 @@
-function [t_out,y_out,u_out] = RK4Integrate(robot,tspan,q0,dq0,controller,terrain)
+function [robot] = RK4Integrate(robot,tspan,controller,terrain)
 %RK4INTEGRATE This is a fixed timestep RK4 integrator with zero order hold
 %controller function
 
@@ -6,12 +6,13 @@ t = tspan(1);
 tstop = tspan(2);
 Ts = robot.T_ctrl;
 ratio = robot.T_ratio;
-X = [q0,dq0];
-dynamicState = robot.dynamic_state_arr(end);
+X = [robot.q,robot.qdot];
+dynamicState = 0; %Must start in flight
+stanceFootPos = [0,0]; %Only important while in stance, assumed to starts in flight
 
 while t < tstop
     
-    u = controller(robot, X(1:(length(X)/2)), X((length(X)/2+1):end));
+    u = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)');
     
     for i = 1:ratio
         X1 = X;
@@ -28,21 +29,16 @@ while t < tstop
         
         X = rs_add(X1, rs_smul(rs_add(rs_add(dX1, rs_smul(dX2, 2)), rs_add(rs_smul(dX3, 2), dX4)), Ts/6));
         t = t + Ts;
+        
+        [X,dynamicState,stanceFootPos] = checkHybridTransition(robot,X,dynamicState,terrain,stanceFootPos);
     end
     
+    robot = fillSimData(robot,t,X,u,dynamicState);
     
-    f = 1e-2;
-    noiseval = (1 - f) * noiseval + f * noise * randn(4, 1);
-    
-    u.right.l_eq     = u.right.l_eq + noiseval(1);
-    u.right.theta_eq = u.right.theta_eq + noiseval(2);
-    u.left.l_eq      = u.left.l_eq + noiseval(3);
-    u.left.theta_eq  = u.left.theta_eq + noiseval(4);
-    
-    % Stop if crashed
-    if X.body.y < min(terrain.height)
-        break
-    end
+    % Stop if crashed TODO
+%     if X(2) < terrain.minHeight()
+%         break
+%     end
 end
 
 
@@ -59,35 +55,64 @@ function height = footTouchdownDist(robot, X, terrain)
     height = yFootPos - groundHeight;  
 end
 
+function [Xout,dynamicState,stanceFootPos] = checkHybridTransition(robot,X,dynamicState,terrain,stanceFootPos)
+%CHECKHYBRIDTRANSITION
+Xout = X;
+switch dynamicState
+    case 0 %Flight
+        %Check if the new foot position is below the ground
+        if footTouchdownDist(robot,X,terrain) < 0
+            stanceFootPos(1) = X(1) + X(6)*sin( X(4) );
+            stanceFootPos(2) = X(2) - X(6)*cos( X(4) );
+            dynamicState = 1;
+            Xout = [X(1)-stanceFootPos(1), X(2)-stanceFootPos(2), X(3), X(5), X(7),X(8),X(9),X(11)];
+        end        
+    case 1 %Stance
+        %Check if foot force no longer pushed into the groun
+        if robot.footForce(X(1:4),X(5:8)) > 0
+            dynamicState = 0;   
+            
+            alpha = atan2(-X(1),X(2));
+            alphadot = ( X(1).*X(6)./(X(2).^2) - X(5)./X(2) ) ./ ( 1 + (X(1)./X(2)).^2 );
+            L = sqrt(X(1).^2 + X(2).^2);
+            Ldot = ( X(1).*X(5) + X(2).*X(6) ) ./ sqrt(X(1).^2 + X(2).^2);
+            
+            Xout = [X(1) + stanceFootPos(1), X(2) + stanceFootPos(2),...
+                    X(3), alpha, X(4), L,...
+                    X(5),X(6),X(7),alphadot,X(8),Ldot];
+        end
+end
+end
+
 function dX = monopod_dynamics(X, u, robot, dynamicState)
 
 switch dynamicState
     
     case 0 %Flight
-        q = X(1:6);
-        qdot = X(7:12);
+        q = X(1:6)';
+        qdot = X(7:12)';
     
-        dX(1:6,1) = qdot;
+        dX(1:6) = qdot;
         
         M = robot.massMatrixFlight(q);
-        f_d = robot.dampingFlight(sys,q,qdot);
+        f_d = robot.dampingFlight(q,qdot);
         B = robot.controlFlight(q);
-        h = dynamicsFlight(sys,q,qdot);        
+        h = robot.dynamicsFlight(q,qdot);        
         %The Second Order dynamics M*q_ddot + h = Bu + f_damping
-        dX(7:12,1) = M\(B*u + f_d - h);
+        dX(7:12) = M\(B*u + f_d - h);
         
     case 1 %Stance
-        q = X(1:4);
-        qdot = X(5:8);
+        q = X(1:4)';
+        qdot = X(5:8)';
     
-        dX(1:4,1) = qdot;
+        dX(1:4) = qdot;
         
         M = robot.massMatrixStance(q);
-        f_d = robot.dampingStance(sys,q,qdot);
+        f_d = robot.dampingStance(q,qdot);
         B = robot.controlStance(q);
-        h = dynamicsStance(sys,q,qdot);        
+        h = robot.dynamicsStance(q,qdot);        
         %The Second Order dynamics M*q_ddot + h = Bu + f_damping
-        dX(5:8,1) = M\(B*u + f_d - h); 
+        dX(5:8) = M\(B*u + f_d - h); 
 end %switch
 end
 

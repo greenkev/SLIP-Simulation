@@ -1,3 +1,11 @@
+robot = prismaticMonopod();
+tspan = [0,3];
+tr = Terrain;
+tr = tr.flatGround();
+
+robot = RK4Integrate(robot,tspan,@raibertController,tr);
+
+%%
 % Regenerate the loopup Table
 obj = SLIPdynamics();
 obj.dataTimeStep = 0.005;  %Output timestep (sec)
@@ -52,8 +60,8 @@ legend('Leg Angle','0.1*state');
 ylabel('Leg angle ');
 xlabel('time (sec)');
 %%
-aObj = monopedAnimation(obj);
-for i = 1:length(obj.t)
+aObj = monopedAnimation(robot);
+for i = 1:length(robot.t)
 %    aObj.dispAtIndex(i);
 %    keyboard
 end
