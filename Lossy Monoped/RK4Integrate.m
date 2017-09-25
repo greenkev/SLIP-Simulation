@@ -30,7 +30,11 @@ while t < tstop
         X = rs_add(X1, rs_smul(rs_add(rs_add(dX1, rs_smul(dX2, 2)), rs_add(rs_smul(dX3, 2), dX4)), Ts/6));
         t = t + Ts;
         
-        [X,dynamicState,stanceFootPos] = checkHybridTransition(robot,X,dynamicState,terrain,stanceFootPos);
+        [X,X_cont,t,dynamicState,stanceFootPos] = checkHybridTransition(robot,X,X1,t,dynamicState,terrain,stanceFootPos);
+        
+        if length(X_cont) ~= length(X)           
+            robot = fillSimData(robot,t,X_cont,u,mod(dynamicState+1,2));
+        end
     end
     
     robot = fillSimData(robot,t,X,u,dynamicState);
@@ -55,23 +59,37 @@ function height = footTouchdownDist(robot, X, terrain)
     height = yFootPos - groundHeight;  
 end
 
-function [Xout,dynamicState,stanceFootPos] = checkHybridTransition(robot,X,dynamicState,terrain,stanceFootPos)
+function [Xout,Xcont,t,dynamicState,stanceFootPos] = checkHybridTransition(robot,X,X1,t,dynamicState,terrain,stanceFootPos)
 %CHECKHYBRIDTRANSITION
 Xout = X;
+
 switch dynamicState
     case 0 %Flight
         %Check if the new foot position is below the ground
         if footTouchdownDist(robot,X,terrain) < 0
+            
+            footDistPrev = footTouchdownDist(robot,X1,terrain);
+            footDistNext = footTouchdownDist(robot,X,terrain);
+                        
+            t = interp1([footDistPrev;footDistNext],[t-robot.T_ctrl;t],0);
+            X = interp1([footDistPrev;footDistNext],[X1;X],0);
+              
             stanceFootPos(1) = X(1) + X(6)*sin( X(4) );
-%             stanceFootPos(2) = X(2) - X(6)*cos( X(4) );
-            stanceFootPos(2) = terrain.groundHeight(stanceFootPos(1));
+            stanceFootPos(2) = X(2) - X(6)*cos( X(4) );
+%             stanceFootPos(2) = terrain.groundHeight(stanceFootPos(1));
             dynamicState = 1;
             Xout = [X(1)-stanceFootPos(1), X(2)-stanceFootPos(2), X(3), X(5), X(7),X(8),X(9),X(11)];
         end        
     case 1 %Stance
-        %Check if foot force no longer pushed into the groun
+        %Check if foot force no longer pushed into the ground
         if robot.footForce(X(1:4),X(5:8)) > 0
-            dynamicState = 0;   
+            dynamicState = 0;  
+            
+            footForcePrev = robot.footForce(X1(1:4),X1(5:8));
+            footForceNext = robot.footForce(X(1:4),X(5:8));
+                        
+            t = interp1([footForcePrev;footForceNext],[t-robot.T_ctrl;t],0);
+            X = interp1([footForcePrev;footForceNext],[X1;X],0);
             
             alpha = atan2(-X(1),X(2));
             alphadot = ( X(1).*X(6)./(X(2).^2) - X(5)./X(2) ) ./ ( 1 + (X(1)./X(2)).^2 );
@@ -83,6 +101,8 @@ switch dynamicState
                     X(5),X(6),X(7),alphadot,X(8),Ldot];
         end
 end
+
+Xcont = X;
 end
 
 function dX = monopod_dynamics(X, u, robot, dynamicState)

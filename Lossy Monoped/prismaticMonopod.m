@@ -55,8 +55,8 @@ classdef prismaticMonopod
                 f = 0; %In flight
             else
                 f =   robot.k_leg*(sqrt(q(1)^2 + q(2)^2) - q(4))... %Spring Force
-                    + robot.b_leg*(sqrt(qdot(1)^2 + qdot(2)^2) - qdot(4))... %Leg Damping
                     - robot.m_toe*robot.grav* q(2)/sqrt(q(1)^2 + q(2)^2); %Gravitational Force
+%                     + robot.b_leg*(sqrt(qdot(1)^2 + qdot(2)^2) - qdot(4))... %Leg Damping
                     
             end
         end
@@ -68,7 +68,7 @@ classdef prismaticMonopod
 
 
             robot.dynamic_state_arr = [robot.dynamic_state_arr;dynamicState*ones(size(t))];            
-            o.u = [robot.u;u'];
+            robot.u = [robot.u;u'];
             
             switch dynamicState
                 case 0 %Flight phase

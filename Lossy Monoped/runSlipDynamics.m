@@ -31,26 +31,26 @@ save('lookupTable.mat','lookupTable');
 figure(9)
 subplot(3,1,1)
 hold off
-plot(obj.t,obj.q(:,2));
+plot(robot.t,robot.q(:,2));
 ylabel('Body Vertical Position (m)');
 xlabel('time (sec)');
-title(['SLIP Raibert Hopper, Desired Speed ',num2str(des_vel),' m/sec']);
+% title(['SLIP Raibert Hopper, Desired Speed ',num2str(des_vel),' m/sec']);
 % axis([-inf,inf,-0.2,2])
 
 subplot(3,1,2)
 hold off
-plot(obj.t,obj.qdot(:,1));
+plot(robot.t,robot.qdot(:,1));
 hold on
-plot(obj.t,des_vel*ones(size(obj.t)),'--r');
+% plot(robot.t,des_vel*ones(size(robot.t)),'--r');
 legend('Simulation','Desired');
 ylabel('Body Horizontal velocity (m/sec)');
 xlabel('time (sec)');
 
 subplot(3,1,3)
 hold off
-plot(obj.t,obj.q(:,4));
+plot(robot.t,robot.q(:,4));
 hold on
-plot(obj.t,0.1*obj.dynamic_state_arr);
+plot(robot.t,0.1*robot.dynamic_state_arr);
 legend('Leg Angle','0.1*state');
 ylabel('Leg angle ');
 xlabel('time (sec)');
