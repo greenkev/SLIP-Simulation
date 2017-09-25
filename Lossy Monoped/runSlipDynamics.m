@@ -1,5 +1,5 @@
 robot = prismaticMonopod();
-tspan = [0,10];
+tspan = [0,5];
 tr = Terrain;
 % tr = tr.flatGround();
 % tr = tr.uniformIncline(5*(pi/180));

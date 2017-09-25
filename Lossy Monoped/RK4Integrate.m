@@ -4,7 +4,7 @@ function [robot] = RK4Integrate(robot,tspan,controller,terrain)
 
 t = tspan(1);
 tstop = tspan(2);
-Ts = robot.T_ctrl;
+Ts = robot.T_ctrl/robot.T_ratio;
 ratio = robot.T_ratio;
 X = [robot.q,robot.qdot];
 dynamicState = 0; %Must start in flight

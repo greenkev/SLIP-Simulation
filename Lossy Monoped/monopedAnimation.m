@@ -11,6 +11,7 @@ classdef monopedAnimation
         bodyPoints
         slider %UIelement time index slider handle
         visSpring %Visual spring length when undeflected (double)
+        exportAnimationButton
         tr %terrain Object
     end
     
@@ -52,13 +53,16 @@ classdef monopedAnimation
                 'Value',1,'Units','normalized','Position',[0.1250 0.0167 0.7804 0.0476],...
                 'Callback',@(source,event) updateSlider(animObj,source,event));
             
+            animObj.exportAnimationButton = uicontrol('style','pushbutton','String','Export Video','Units','normalized','Position',[0.1250 0.0658 0.2020 0.0522],'Callback',@(source,event) exportVideo(animObj,source,event));
+            
             %here is where the initial state is actually written to the
             %visuals
             updateVisuals(animObj,animObj.obj.q(1,:),animObj.obj.t(1),animObj.obj.dynamic_state_arr(1));
         end
         
         function runAnimation(animObj)
-            for i = 1:length(animObj.obj.t)
+            dataFrameRate = 1/animObj.obj.T_ctrl;
+            for i = 1:round(dataFrameRate/60):length(animObj.obj.t)
                 updateVisuals(animObj,animObj.obj.q(i,:),animObj.obj.t(i),animObj.obj.dynamic_state_arr(i));
             end
         end
@@ -69,6 +73,24 @@ classdef monopedAnimation
             index = round(source.Value); %Read the closest whole step of the slider
             %Write the selected index's state to the model
             updateVisuals(animObj,animObj.obj.q(index,:),animObj.obj.t(index),animObj.obj.dynamic_state_arr(index));
+        end
+        
+        function exportVideo(animObj,source,event)
+            disp('called Export Video');
+            animObj.fig.Position = [100,100,1280,720];
+            v = VideoWriter('newfile.mp4','MPEG-4');
+            v.Quality = 100;
+            v.FrameRate = 60;
+            open(v);
+            
+            dataFrameRate = 1/animObj.obj.T_ctrl;
+            
+            for i = 1:round(dataFrameRate/v.FrameRate):length(animObj.obj.t)
+                updateVisuals(animObj,animObj.obj.q(i,:),animObj.obj.t(i),animObj.obj.dynamic_state_arr(i));
+                frame = getframe(animObj.fig);
+                writeVideo(v,frame);
+            end
+            close(v);
         end
         
         function updateVisuals(animObj,q,t,dynamic_state)

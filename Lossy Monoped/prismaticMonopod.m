@@ -43,7 +43,7 @@ classdef prismaticMonopod
         %Controller Update time step
         T_ctrl = 1/1000 %Run at 1 KHz
         %physics timestep
-        T_ratio = 10 %Number of simulation steps per controller step
+        T_ratio = 3 %Number of simulation steps per controller step
     end
     
     methods

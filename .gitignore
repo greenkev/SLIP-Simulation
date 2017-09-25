@@ -10,6 +10,9 @@ desktop.ini
 # Compiled MEX binaries (all platforms)
 *.mex*
 
+#All Videos
+*.mp4
+
 # Simulink Code Generation
 slprj/
 
