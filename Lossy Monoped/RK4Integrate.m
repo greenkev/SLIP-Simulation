@@ -10,9 +10,13 @@ X = [robot.q,robot.qdot];
 dynamicState = 0; %Must start in flight
 stanceFootPos = [0,0]; %Only important while in stance, assumed to starts in flight
 
+
+[u,ctrlParams] = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)');
+robot.ctrlParams = [ctrlParams];
+
 while t < tstop
     
-    u = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)');
+    [u,ctrlParams] = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)');
     
     for i = 1:ratio
         X1 = X;
@@ -34,10 +38,12 @@ while t < tstop
         
         if length(X_cont) ~= length(X)           
             robot = fillSimData(robot,t,X_cont,u,mod(dynamicState+1,2));
+            robot.ctrlParams = [robot.ctrlParams;ctrlParams];
         end
     end
     
     robot = fillSimData(robot,t,X,u,dynamicState);
+    robot.ctrlParams = [robot.ctrlParams;ctrlParams];
     
     % Stop if crashed TODO
 %     if X(2) < terrain.minHeight()

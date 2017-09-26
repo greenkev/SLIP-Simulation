@@ -6,7 +6,7 @@ classdef liftOffSimulation
     properties      
         % Parameters
         %Gravity
-        g = 9.81; 
+        grav = 9.81; 
         %Leg Spring Constant
         K = 2000;
         %Body Mass
@@ -24,17 +24,17 @@ classdef liftOffSimulation
         
         function obj = liftOffSimulation(inputObj) 
             %Potentially used in the future for Graphics init?
-            obj.g = inputObj.g;
+            obj.grav = inputObj.grav;
             obj.K = inputObj.k_leg;
             obj.M =  inputObj.m_body + inputObj.m_thigh;
-            obj.L0 = 0.75;
+            obj.L0 = 0.70;
         end
         
         function [r2] = simulate(o,alphaTD)
         %simulate Run a simulation return the deviation from symetric
         %squared.
             dyn = @(t,y) [y(2);y(1)*o.K*(o.L0-sqrt(y(1)^2 + y(3)^2))/(o.M*sqrt(y(1)^2 + y(3)^2));...
-                          y(4);y(3)*o.K*(o.L0-sqrt(y(1)^2 + y(3)^2))/(o.M*sqrt(y(1)^2 + y(3)^2))-o.g];
+                          y(4);y(3)*o.K*(o.L0-sqrt(y(1)^2 + y(3)^2))/(o.M*sqrt(y(1)^2 + y(3)^2))-o.grav];
 
             options = odeset('Events',@(t,y) (stanceTransitions(t,y,o)));
             y0 = [-o.L0*sin(alphaTD);o.xDot;o.L0*cos(alphaTD);o.yDot];

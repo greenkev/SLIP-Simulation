@@ -38,6 +38,7 @@ classdef prismaticMonopod
         qdot = zeros(1,6);
         %Torque Actuation Data
         u = [0,0];
+        ctrlParams;
         
         %SIMULATION SETTINGS
         %Controller Update time step
