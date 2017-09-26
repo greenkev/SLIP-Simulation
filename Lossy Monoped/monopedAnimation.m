@@ -62,7 +62,7 @@ classdef monopedAnimation
         
         function runAnimation(animObj)
             dataFrameRate = 1/animObj.obj.T_ctrl;
-            for i = 1:round(dataFrameRate/60):length(animObj.obj.t)
+            for i = 1:round(dataFrameRate/120):length(animObj.obj.t)
                 updateVisuals(animObj,animObj.obj.q(i,:),animObj.obj.t(i),animObj.obj.dynamic_state_arr(i));
             end
         end

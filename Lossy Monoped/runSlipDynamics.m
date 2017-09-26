@@ -3,7 +3,7 @@ tspan = [0,5];
 tr = Terrain;
 % tr = tr.flatGround();
 % tr = tr.uniformIncline(5*(pi/180));
-tr = tr.randomBumpy(0.1,0.2);
+tr = tr.randomBumpy(0.2,0.2);
 tr.interpolationMethod = 'pchip';
 clear raibertController;
 robot = RK4Integrate(robot,tspan,@raibertController,tr);
