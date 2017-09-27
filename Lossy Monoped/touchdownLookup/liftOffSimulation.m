@@ -42,17 +42,24 @@ function [value,isterminal,direction] = stanceTransitions(t,y,o)
 
 %On a pure elastic leg zero force on the foot is identical to when the 
 %leg length reaches the unstretched length
-value = sqrt(y(1)^2 + y(3)^2) - o.L0;
+value = sqrt(y(1)^2 + y(2)^2) - o.L0;
 isterminal = 1;
 direction = 1;
 end %function stanceTransitions
 
 function [dX] = stanceDynamics(obj,robot,X)
-        %No applied forces
-        u = [0;0];
+        %Low Level controller gains, UNTUNED
+        kp_hip = 0; %100;
+        kv_hip = 0; %10;
+        kp_L0 = 50000;
+        kv_L0 = 1000;
+        
         q = X(1:4);
         qdot = X(5:8);
-    
+        
+        u(1,1) = -kp_L0*(q(4) - obj.L0) - kv_L0*qdot(4);
+        u(2,1) = kp_hip*(q(3) - 0) + kv_hip*qdot(3);
+            
         dX(1:4) = qdot;
         
         M = robot.massMatrixStance(q);
@@ -63,8 +70,8 @@ function [dX] = stanceDynamics(obj,robot,X)
         dX(5:8) = M\(B*u + f_d - h); 
         
         %Fix the leg resting length
-        dX(4) = 0;
-        dX(8) = 0;
+%         dX(4) = 0;
+%         dX(8) = 0;
         
         dX = dX';
 end

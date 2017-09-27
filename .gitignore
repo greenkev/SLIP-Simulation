@@ -13,6 +13,9 @@ desktop.ini
 #All Videos
 *.mp4
 
+#Imaged
+*.png
+
 # Simulink Code Generation
 slprj/
 

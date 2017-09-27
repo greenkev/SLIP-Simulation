@@ -7,6 +7,8 @@ if isempty(obj)
 end
 obj.xDot = xDot;
 obj.yDot = yDot;
-alphaTD = fmincon(@(x)obj.simulate(x),0.1,[1;-1],[pi/2;pi/2]);
+% options = optimset('Display','iter');
+alphaTD = fminbnd(@(x)obj.simulate(x),-pi/2,pi/2);
+% keyboard
 end
 
