@@ -7,7 +7,7 @@ tr = tr.flatGround();
 tr.interpolationMethod = 'pchip';
 load('lookupTable.mat');
 clear EGBcontroller;
-des_vel = 3; %m/s
+des_vel = 1; %m/s
 
 ctrl = @(obj,q,qdot) EGBcontroller(obj,q,qdot,lookupTable,des_vel);
 

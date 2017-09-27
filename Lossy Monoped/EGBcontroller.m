@@ -3,7 +3,7 @@ function [ u,ctrlParams ] = EGBcontroller(obj,q,qdot,lookupTable,desVel)
 
 loadingCompression = 0.05; %Amount of compression for Loading and Unloading phases (m)
 liftOffClearance = 0.05; %Distance toe must rise before the leg can be swung forward during flight (m)
-k_legAngle = 0.04; %m/(m/s) foot distance 
+k_legAngle = 0.01; %m/(m/s) foot distance 
 L_flight = 0.7; %unstretched leg length during compression and flight (m)
 L_extension = 0.71; %unstretched leg length during thrust (m)
 des_vel = desVel; %m/s
