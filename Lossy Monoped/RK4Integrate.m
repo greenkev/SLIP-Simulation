@@ -11,12 +11,12 @@ dynamicState = 0; %Must start in flight
 stanceFootPos = [0,0]; %Only important while in stance, assumed to starts in flight
 
 
-[u,ctrlParams] = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)');
+[u,ctrlParams] = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)',t);
 robot.ctrlParams = [ctrlParams];
 
 while t < tstop
     
-    [u,ctrlParams] = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)');
+    [u,ctrlParams] = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)',t);
     
     for i = 1:ratio
         X1 = X;

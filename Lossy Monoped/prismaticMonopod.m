@@ -34,7 +34,7 @@ classdef prismaticMonopod
         %Recorded State
         dynamic_state_arr = 0;
         %World Frame state data
-        q = [0,1,0,0,0.7,0.7]; %Some basic initial state data
+        q = [0,0.85,0,0,0.7,0.7]; %Some basic initial state data
         qdot = zeros(1,6);
         %Torque Actuation Data
         u = [0,0];
