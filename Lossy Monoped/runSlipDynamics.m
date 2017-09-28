@@ -1,5 +1,5 @@
 robot = prismaticMonopod();
-tspan = [0,20];
+tspan = [0,10];
 tr = Terrain;
 tr = tr.flatGround();
 % tr = tr.uniformIncline(5*(pi/180));
@@ -9,6 +9,7 @@ load('lookupTable.mat');
 clear EGBcontroller;
 des_vel = 0.5; %m/s
 
+addpath('Controllers/EGB');
 ctrl = @(obj,q,qdot) EGBcontroller(obj,q,qdot,lookupTable,des_vel);
 
 
