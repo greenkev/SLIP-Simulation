@@ -18,13 +18,13 @@ classdef prismaticMonopod
         %Thigh
         m_thigh = 0.2;
         r_thigh = 0.2;
-        I_thigh = 0.01; % Confirmed Realistic
+        I_thigh = 0.05; % Confirmed Realistic
         %Leg Length Rotor
         b_rot = 1;
         m_rot = 4;  %Effective reflective interia on linear leg length
         %Leg Spring
         k_leg = 1000;
-        b_leg = 10;
+        b_leg = 1;
         %Toe
         m_toe = 0.3;
         
@@ -55,9 +55,9 @@ classdef prismaticMonopod
             if length(q) == 6 
                 f = 0; %In flight
             else
-                f =   robot.k_leg*(q(4) - sqrt(q(1)^2 + q(2)^2))... %Spring Force
-                    + robot.m_toe*robot.grav* q(2)/sqrt(q(1)^2 + q(2)^2)... %Gravitational Force
-                    + robot.b_leg*(qdot(4) - (q(1)*qdot(1) + q(2)*qdot(2))/(sqrt(q(1)^2 + q(2)^2))); %Leg Damping                 
+                f =   robot.k_leg*(q(4) - sqrt(q(1)^2 + q(2)^2));%... %Spring Force
+%                     + robot.m_toe*robot.grav* q(2)/sqrt(q(1)^2 + q(2)^2)... %Gravitational Force
+%                     + robot.b_leg*(qdot(4) - (q(1)*qdot(1) + q(2)*qdot(2))/(sqrt(q(1)^2 + q(2)^2))); %Leg Damping                 
             end
         end
         

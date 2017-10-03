@@ -1,4 +1,4 @@
-function [ u,ctrlParams ] = impulseController(obj,q,qdot,t,lookupTable,desVel,forceProfile)
+function [ u,ctrlParams ] = impulseController(obj,q,qdot,t,lookupTable,desVel)
 
 
 loadingCompression = 0.05; %Amount of compression for Loading and Unloading phases (m)
@@ -18,10 +18,10 @@ kp_L0 = 50000;
 kv_L0 = 1000;
 %Impulse Controller Gains
 Ks = [0, 0, 0]; %State Matrix, Integral, proportional, derivative
-Ke = [0, 0, 0]; %Feedback Matrix, Integral, proportional, derivative
+Ke = [100, 30, 0]; %Feedback Matrix, Integral, proportional, derivative
 
 %States: 1= Loading, 2= Compression, 3= Thrust, 4= Unloading, 5=Flight
-persistent stateMachine stanceFInt tPrev
+persistent stateMachine stanceFInt tPrev forceProfile
 if isempty(stateMachine) || isempty(stanceFInt) || isempty(tPrev)
     stateMachine = 5; %Simulation starts by dropping robot
     stanceFInt = 0;
@@ -77,6 +77,7 @@ switch stateMachine
             stateMachine = 1;
             stanceFInt = 0;
             tPrev = t;
+            forceProfile = generateForceProfile( obj, q(4), qdot(1), qdot(2), L_flight);
         end
 end
 
@@ -84,15 +85,15 @@ end
 ctrlParams = zeros(1,10);
 
 switch stateMachine
-    case 1 %Loading
+    case 10 %Loading
         u(1,1) = -kp_L0*(q(5) - L_flight) - kv_L0*qdot(5);
         u(2,1) = 0; %Zero Hip Torque
         
         ctrlParams(1) = L_flight;
-    case {2,3} %Compression and Thrust
-        Fdes = [interp1(forceProfile.t,forceProfile.Fint,t);...
-                interp1(forceProfile.t,forceProfile.F,t);...
-                interp1(forceProfile.t,forceProfile.Fdot,t);];
+    case {1,2,3} %Compression and Thrust
+        Fdes = [interp1(forceProfile.t,forceProfile.Fint,t-tPrev);...
+                interp1(forceProfile.t,forceProfile.F,t-tPrev);...
+                interp1(forceProfile.t,forceProfile.Fdot,t-tPrev);];
             
         Fcurr = [stanceFInt;...
                 Fmeasured;...

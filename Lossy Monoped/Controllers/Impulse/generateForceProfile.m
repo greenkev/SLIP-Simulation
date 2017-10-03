@@ -17,7 +17,7 @@ function forceProfile = generateForceProfile( robot, alphaTD, xDot, yDot, L0 )
     
     forceProfile.t = t;
     forceProfile.F = force;
-    forceProfile.Fdot = o.K*sqrt(y_out(:,3).^2 + y_out(:,4).^2);
+    forceProfile.Fdot = o.K.*( - (y_out(:,1).*y_out(:,3) + y_out(:,2).*y_out(:,4))./(sqrt(y_out(:,1).^2 + y_out(:,2).^2)));
     forceProfile.Fint = cumtrapz(t,force);
 end
 
@@ -29,7 +29,7 @@ function dX = stanceDynamics(o,y)
 end
 
 function [value,isterminal,direction] = stanceTransitions(t,y,o)
-%ODE Event function sensing foot liftoff during stance while moving upward
+%ODE Event function sensing foot liftoff during stance
 
     %On a pure elastic leg zero force on the foot is identical to when the 
     %leg length reaches the unstretched length

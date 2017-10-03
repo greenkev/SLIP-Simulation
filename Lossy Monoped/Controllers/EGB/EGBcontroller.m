@@ -1,4 +1,4 @@
-function [ u,ctrlParams ] = EGBcontroller(obj,q,qdot,lookupTable,desVel)
+function [ u,ctrlParams ] = EGBcontroller(obj,q,qdot,t,lookupTable,desVel)
 
 
 loadingCompression = 0.05; %Amount of compression for Loading and Unloading phases (m)
