@@ -21,13 +21,17 @@ Ks = [0, 0, 0]; %State Matrix, Integral, proportional, derivative
 Ke = [0, 0, 0]; %Feedback Matrix, Integral, proportional, derivative
 
 %States: 1= Loading, 2= Compression, 3= Thrust, 4= Unloading, 5=Flight
-persistent stateMachine stanceFInt
-if isempty(stateMachine) || isempty(stanceFInt)
+persistent stateMachine stanceFInt tPrev
+if isempty(stateMachine) || isempty(stanceFInt) || isempty(tPrev)
     stateMachine = 5; %Simulation starts by dropping robot
     stanceFInt = 0;
+    tPrev = t;
     disp('initialized persistents in raibert controller');
 end
 
+Fmeasured = footForce(obj,q,qdot);
+%If the state vector is smaller because of stance, calculate the missing
+% elements
 if length(q) == 4
     ydot = qdot;
     y = q;
@@ -40,37 +44,35 @@ if length(q) == 4
     qdot =    [ydot(1:3);alphadot;ydot(4);Ldot]; 
 end
 
-%Check for a chance in the state 
+
+%Check for a chance in the state and update the integration 
 switch stateMachine
     case 1 %Loading
         %Transition once the leg has compressed a small amount
         if q(5) - q(6) >= loadingCompression
             stateMachine = 2;
-            disp('Controller End Loading');
         end  
+        stanceFInt = stanceFInt + 
     case 2 %Compression
         %Transition if the leg begins to extend
         if qdot(6) >= 0
             stateMachine = 3;
-            disp('Controller End Compression');
         end  
     case 3 %Thrust
         %Transition once the leg compression is less than the threshold
         if q(5) - q(6) <= loadingCompression
             stateMachine = 4;
-            disp('Controller End Thrust');
         end 
     case 4 %Unloading
         %Transition when the foot has sufficient clearance 
         if q(2) - q(6)*cos(q(4)) >= liftOffClearance
             stateMachine = 5;
-            disp(['New TD Angle ',num2str(footTDAngle)]);
         end
     case 5 %Flight
         %Transition if the foot touches the ground
         if q(2) - q(6)*cos(q(4)) <= 0
             stateMachine = 1;
-            disp('Controller has Landed');
+            stanceFInt = 0;
         end
 end
 
@@ -84,18 +86,11 @@ switch stateMachine
         ctrlParams(1) = L_flight;
         ctrlParams(2) = 0;
         ctrlParams(3) = 0;
-    case 2 %Compression
+    case {2,3} %Compression and Thrust
         u(1,1) = -kp_L0*(q(5) - L_flight) - kv_L0*qdot(5);
         u(2,1) = kp_hip*(q(3) - phi_des) + kv_hip*qdot(3);
         
         ctrlParams(1) = L_flight;
-        ctrlParams(2) = phi_des;
-        ctrlParams(3) = 0;
-    case 3 %Thrust
-        u(1,1) = -kp_L0*(q(5) - L_extension) - kv_L0*qdot(5);
-        u(2,1) = kp_hip*(q(3) - phi_des) + kv_hip*qdot(3);
-        
-        ctrlParams(1) = L_extension;
         ctrlParams(2) = phi_des;
         ctrlParams(3) = 0;
     case 4 %Unloading
