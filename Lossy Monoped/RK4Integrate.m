@@ -12,7 +12,7 @@ stanceFootPos = [0,0]; %Only important while in stance, assumed to starts in fli
 
 
 [u,ctrlParams] = controller(robot, X(1:(length(X)/2))', X((length(X)/2+1):end)',t);
-robot.ctrlParams = [ctrlParams];
+robot.ctrlParams = ctrlParams;
 
 while t < tstop
     
@@ -88,7 +88,7 @@ switch dynamicState
         end        
     case 1 %Stance
         %Check if foot force no longer pushed into the ground
-        if robot.footForce(X(1:4),X(5:8)) > 0
+        if robot.footForce(X(1:4),X(5:8)) < 0
             dynamicState = 0;  
             
             footForcePrev = robot.footForce(X1(1:4),X1(5:8));

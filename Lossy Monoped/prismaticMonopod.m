@@ -55,9 +55,9 @@ classdef prismaticMonopod
             if length(q) == 6 
                 f = 0; %In flight
             else
-                f =   robot.k_leg*(sqrt(q(1)^2 + q(2)^2) - q(4))... %Spring Force
-                    - robot.m_toe*robot.grav* q(2)/sqrt(q(1)^2 + q(2)^2)... %Gravitational Force
-                    + robot.b_leg*((q(1)*qdot(1) + q(2)*qdot(2))/(sqrt(qdot(1)^2 + qdot(2)^2) - qdot(4))); %Leg Damping                 
+                f =   robot.k_leg*(q(4) - sqrt(q(1)^2 + q(2)^2))... %Spring Force
+                    + robot.m_toe*robot.grav* q(2)/sqrt(q(1)^2 + q(2)^2)... %Gravitational Force
+                    + robot.b_leg*(qdot(4) - (q(1)*qdot(1) + q(2)*qdot(2))/(sqrt(q(1)^2 + q(2)^2))); %Leg Damping                 
             end
         end
         
@@ -68,9 +68,7 @@ classdef prismaticMonopod
             if length(q) == 6 
                 f = 0; %In flight
             else
-                f =   robot.k_leg*(sqrt(q(1)^2 + q(2)^2) - q(4))... %Spring Force
-                    - robot.m_toe*robot.grav* q(2)/sqrt(q(1)^2 + q(2)^2); %Gravitational Force
-%                     + robot.b_leg*(sqrt(qdot(1)^2 + qdot(2)^2) - qdot(4))... %Leg Damping                 
+                f = 0; %ToDo              
             end
         end
         

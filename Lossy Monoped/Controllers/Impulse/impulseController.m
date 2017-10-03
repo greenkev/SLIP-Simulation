@@ -30,6 +30,7 @@ if isempty(stateMachine) || isempty(stanceFInt) || isempty(tPrev)
 end
 
 Fmeasured = footForce(obj,q,qdot);
+dFmeasured  = footForceDot(obj,q,qdot);
 %If the state vector is smaller because of stance, calculate the missing
 % elements
 if length(q) == 4
@@ -52,17 +53,19 @@ switch stateMachine
         if q(5) - q(6) >= loadingCompression
             stateMachine = 2;
         end  
-        stanceFInt = stanceFInt + 
+        stanceFInt = stanceFInt + Fmeasured*obj.T_ctrl;
     case 2 %Compression
         %Transition if the leg begins to extend
         if qdot(6) >= 0
             stateMachine = 3;
         end  
+        stanceFInt = stanceFInt + Fmeasured*obj.T_ctrl;
     case 3 %Thrust
         %Transition once the leg compression is less than the threshold
         if q(5) - q(6) <= loadingCompression
             stateMachine = 4;
         end 
+        stanceFInt = stanceFInt + Fmeasured*obj.T_ctrl;
     case 4 %Unloading
         %Transition when the foot has sufficient clearance 
         if q(2) - q(6)*cos(q(4)) >= liftOffClearance
@@ -73,36 +76,44 @@ switch stateMachine
         if q(2) - q(6)*cos(q(4)) <= 0
             stateMachine = 1;
             stanceFInt = 0;
+            tPrev = t;
         end
 end
 
 %Force and Torque Controllers depending on state
-ctrlParams(4) = 0;
+ctrlParams = zeros(1,10);
+
 switch stateMachine
     case 1 %Loading
         u(1,1) = -kp_L0*(q(5) - L_flight) - kv_L0*qdot(5);
         u(2,1) = 0; %Zero Hip Torque
         
         ctrlParams(1) = L_flight;
-        ctrlParams(2) = 0;
-        ctrlParams(3) = 0;
     case {2,3} %Compression and Thrust
-        u(1,1) = -kp_L0*(q(5) - L_flight) - kv_L0*qdot(5);
+        Fdes = [interp1(forceProfile.t,forceProfile.Fint,t);...
+                interp1(forceProfile.t,forceProfile.F,t);...
+                interp1(forceProfile.t,forceProfile.Fdot,t);];
+            
+        Fcurr = [stanceFInt;...
+                Fmeasured;...
+                dFmeasured;];
+            
+            
+        u(1,1) = Fdes(2) + Ks*Fcurr + Ke*(Fdes - Fcurr);
         u(2,1) = kp_hip*(q(3) - phi_des) + kv_hip*qdot(3);
         
         ctrlParams(1) = L_flight;
         ctrlParams(2) = phi_des;
-        ctrlParams(3) = 0;
+        
+        ctrlParams(5:7) = Fcurr';
+        ctrlParams(8:10) = Fdes';
     case 4 %Unloading
         u(1,1) = -kp_L0*(q(5) - L_flight) - kv_L0*qdot(5);
         u(2,1) = 0; %Zero Hip Torque
         
         ctrlParams(1) = L_extension;
-        ctrlParams(2) = 0;
-        ctrlParams(3) = 0;
     case 5 %Flight
         xDot =clamp(qdot(1),min(lookupTable.xDot),max(lookupTable.xDot));
-%         xDot = qdot(1);
         yDot =clamp(qdot(2),min(lookupTable.yDot),max(lookupTable.yDot));
         
         footTDAngle = interp2(lookupTable.dX,lookupTable.dY,lookupTable.alpha,xDot,yDot);
@@ -115,7 +126,6 @@ switch stateMachine
         u(2,1) = -kp_swing*(q(4) - footTDAngle) - kv_swing*qdot(4); %Swing leg forward
          
         ctrlParams(1) = L_flight;
-        ctrlParams(2) = 0;
         ctrlParams(3) = footTDAngle;
 end
  

@@ -1,18 +1,18 @@
 robot = prismaticMonopod();
-tspan = [0,10];
+tspan = [0,2];
 tr = Terrain;
 tr = tr.flatGround();
 % tr = tr.uniformIncline(5*(pi/180));
 % tr = tr.randomBumpy(0.1,0.1);
 tr.interpolationMethod = 'pchip';
 
-
-addpath('Controllers/EGB');
+addpath('Analysis_Animation');
+addpath('Controllers/Impulse');
 load('lookupTable.mat');
-clear EGBcontroller;
+clear impulseController;
 des_vel = 0.5; %m/s
 forceProfile = generateForceProfile( robot, 0, 0, -0.5, 0.7 ); %robotobj, td angle, x dot, y dot, resting leg length
-ctrl = @(obj,q,qdot,t) EGBcontroller(obj,q,qdot,t,lookupTable,des_vel,forceProfile);
+ctrl = @(obj,q,qdot,t) impulseController(obj,q,qdot,t,lookupTable,des_vel,forceProfile);
 
 robot = RK4Integrate(robot,tspan,ctrl,tr);
 
